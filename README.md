@@ -1,6 +1,8 @@
 # victron-dbus-tempcontrol
 Read the internal temperature sensor of Victron Smartsolar MPPT. Control  the internal MPPT Relay based on temperature
 
+Tested with Smartsolar 250/100-Tr-VE.Can, Smartsolar is connected via Can.
+
 ![image](https://github.com/user-attachments/assets/3bd7e905-d8f1-4134-b754-f911eac05de0)
 
 
