@@ -1,6 +1,9 @@
 # victron-dbus-tempcontrol
 Read the internal temperature sensor of Victron Smartsolar MPPT. Control  the internal MPPT Relay based on temperature
 
+![image](https://github.com/user-attachments/assets/3bd7e905-d8f1-4134-b754-f911eac05de0)
+
+
 # How to Install
 
 - Login to Cerbo GX with ssh
