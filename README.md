@@ -13,6 +13,7 @@ Read the internal temperature sensor of Victron Smartsolar MPPT. Control  the in
 - mv victron-dbus-tempcontrol-main dbus-tempcontrol
 - cd dbus-tempcontrol
 - Update config.ini (Set your personal settings, see below)
+- Check if its running width python dbus-tempcontrol.py, Cancel with Ctrl+C
 - chmod +x install.sh
 - ./install.sh
 
