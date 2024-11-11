@@ -72,7 +72,7 @@ class TempControl():
         self._dbusserviceMppt01.add_path('/CustomName', self.settings['/Customname'], writeable=True, onchangecallback=self.customnameChanged)
         self._dbusserviceMppt01.add_path('/Temperature', None, gettextcallback=_c)
         self._dbusserviceMppt01.add_path('/Status', 0)
-        self._dbusserviceMppt01.add_path('/TemperatureType', 2, writeable=False)
+        self._dbusserviceMppt01.add_path('/TemperatureType', self.settings['/TemperatureType'], writeable=True, onchangecallback=self.tempTypeChanged)
 
         self._dbusserviceMppt01.register()
         if self.relayControl:
@@ -89,10 +89,14 @@ class TempControl():
 
         SETTINGS = {
             '/Customname':  [path + '/CustomName', 'MPPT%02d Temperatur' % self.mpptid, 0, 0],
+            '/TemperatureType': [path+'/TemperatureType', 2, 0, 0]
         }
 
         self.settings = SettingsDevice(self.dbusConn, SETTINGS, self._setting_changed)
 
+    def tempTypeChanged(self, path, val):
+        self.settings['/TemperatureType'] = val
+        return True
 
     def customnameChanged(self, path, val):
         self.settings['/Customname'] = val
@@ -103,6 +107,8 @@ class TempControl():
 
         if setting == '/Customname':
           self._dbusserviceMppt01['/CustomName'] = newvalue
+        if setting == '/TemperatureType':
+          self._dbusserviceMppt01['/TemperatureType'] = newvalue
     
     def updateMppt01RelayMode(self):
         args = [60889]
@@ -179,7 +185,7 @@ def main():
             dbusservice['%02d' % x] = TempControl(mpptid=x, servicename='com.victronenergy.temperature',deviceinstance=deviceinstance,id=id,relayControl = relayControl,onTemp = onTemp, offTemp = offTemp)
             GLib.timeout_add(updateInterval, dbusservice['%02d' %x].update)
             dbusservice['%02d' % x].update()
-	
+
         mainloop.run()
 
 if __name__ == "__main__":
