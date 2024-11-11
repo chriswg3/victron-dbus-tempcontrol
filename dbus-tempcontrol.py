@@ -57,6 +57,7 @@ class TempControl():
         self.deviceinstance = deviceinstance
         self.dbusConn = dbus.SessionBus(private=True) if 'DBUS_SESSION_BUS_ADDRESS' in os.environ else dbus.SystemBus(private=True)
         self.mppt01relay = VeDbusItemImport(self.dbusConn, id, '/Relay/0/State')
+        self.mppt01serial = VeDbusItemImport(self.dbusConn, id, '/Serial')
         self.mppt01tempObj = self.dbusConn.get_object(id, '/Devices/0/VregLink')
         self._init_device_settings(deviceinstance)
         self.readMppt01Temp()
@@ -65,15 +66,15 @@ class TempControl():
         self._dbusserviceMppt01.add_path('/DeviceInstance', deviceinstance)
         self._dbusserviceMppt01.add_path('/FirmwareVersion', 'v1.0')
         self._dbusserviceMppt01.add_path('/DataManagerVersion', '1.0')
-        self._dbusserviceMppt01.add_path('/Serial', '12345%s' % mpptid)
-        self._dbusserviceMppt01.add_path('/Mgmt/Connection', 've.can')
+        self._dbusserviceMppt01.add_path('/Serial', self.mppt01serial.get_value())
+        self._dbusserviceMppt01.add_path('/Mgmt/Connection', 'Ve.Can')
         self._dbusserviceMppt01.add_path('/ProductName', 'MPPT Temperature')
         self._dbusserviceMppt01.add_path('/ProductId', 0) 
         self._dbusserviceMppt01.add_path('/CustomName', self.settings['/Customname'], writeable=True, onchangecallback=self.customnameChanged)
         self._dbusserviceMppt01.add_path('/Temperature', None, gettextcallback=_c)
         self._dbusserviceMppt01.add_path('/Status', 0)
         self._dbusserviceMppt01.add_path('/TemperatureType', self.settings['/TemperatureType'], writeable=True, onchangecallback=self.tempTypeChanged)
-
+        self._dbusserviceMppt01.add_path('/Connected', 1)
         self._dbusserviceMppt01.register()
         if self.relayControl:
             self.updateMppt01RelayMode()
