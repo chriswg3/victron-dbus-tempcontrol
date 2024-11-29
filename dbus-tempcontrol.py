@@ -54,11 +54,13 @@ class TempControl():
         self.relayControl = relayControl
         self.offTemp = offTemp
         self.onTemp = onTemp
+        self.mppt01power = 0
         self.deviceinstance = deviceinstance
         self.dbusConn = dbus.SessionBus(private=True) if 'DBUS_SESSION_BUS_ADDRESS' in os.environ else dbus.SystemBus(private=True)
         self.mppt01relay = VeDbusItemImport(self.dbusConn, id, '/Relay/0/State')
         self.mppt01serial = VeDbusItemImport(self.dbusConn, id, '/Serial')
         self.mppt01tempObj = self.dbusConn.get_object(id, '/Devices/0/VregLink')
+        self.mppt01powerObj = VeDbusItemImport(self.dbusConn,id,'/Yield/Power')
         self._init_device_settings(deviceinstance)
         self.readMppt01Temp()
 
@@ -126,15 +128,20 @@ class TempControl():
         ret = self.mppt01tempObj.get_dbus_method('GetVreg','com.victronenergy.VregLink')(*args) 
         data = to_native_type(ret[1])
         self.mppt01temp = (data[1]*256+data[0])/100 
+
+    def readMppt01Power(self):
+        self.mppt01power = self.mppt01powerObj.get_value()
+        logging.info("Mppt power %d" % self.mppt01power)
     
     def update(self):
         self.readMppt01Temp()
+        self.readMppt01Power()
         self._dbusserviceMppt01['/Temperature'] = self.mppt01temp
         if ( self.relayControl ):
             logging.info("Check temp for MPPT%02d" % self.mpptid)
-            if ( self.mppt01temp >= self.onTemp and self.mppt01relay.get_value() != 1):
+            if ( self.mppt01power > 0 and self.mppt01temp >= self.onTemp and self.mppt01relay.get_value() != 1):
                self.mppt01relay.set_value(1)
-            elif ( self.mppt01temp <= self.offTemp and self.mppt01relay.get_value() != 0):
+            elif ( ( self.mppt01power <=0 or self.mppt01temp <= self.offTemp ) and self.mppt01relay.get_value() != 0 ):
                self.mppt01relay.set_value(0)
         logging.info("MPPT%02d Temperature: %.02f" % (self.mpptid , self.mppt01temp))
         logging.info("MPPT%02d Relay State: %d" % (self.mpptid , self.mppt01relay.get_value()))
@@ -191,4 +198,3 @@ def main():
 
 if __name__ == "__main__":
         main()
-
